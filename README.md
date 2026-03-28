@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SignalFoundry (working name)
 
-## Getting Started
+Production-oriented scaffold for an evidence-backed startup opportunity platform: research-terminal UX, structured dossiers, transparent scoring, and routes for public discovery, the logged-in workspace, and admin publishing.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router) · **React 19** · **TypeScript**
+- **Tailwind CSS v4** · **shadcn/ui** (Base UI primitives)
+- **Drizzle ORM** + **postgres** driver (Supabase-compatible Postgres)
+- **Zod** (env validation) · **TanStack Table** (keyword grids) · **react-markdown** (sections)
+
+## Prerequisites
+
+- Node.js 20+ or 22+ (LTS recommended; avoid odd major versions if your toolchain warns)
+- npm
+- Optional: local Postgres or [Supabase](https://supabase.com) project for migrations and `db:seed`
+
+## Setup
+
+```bash
+npm install
+cp .env.example .env.local
+```
+
+Run the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). **Idea data is served from typed seed data** (`lib/data/seed-ideas.ts`) so the UI works without a database.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database (optional)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Create a Postgres database and set `DATABASE_URL` in `.env.local`.
+2. Apply schema:
 
-## Learn More
+```bash
+npm run db:push
+```
 
-To learn more about Next.js, take a look at the following resources:
+   Or generate and run migrations:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run db:generate
+npm run db:migrate
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. Seed normalized rows (skips slugs that already exist):
 
-## Deploy on Vercel
+```bash
+npm run db:seed
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The app’s read path for ideas **currently uses seed objects**, not Drizzle queries—wire `lib/repositories/idea-repository.ts` to Postgres when you are ready for production reads.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy (free, public URL)
+
+The production build is standard Next.js; the **free [Vercel](https://vercel.com) Hobby** tier is the simplest option (optimized for Next.js, HTTPS included).
+
+1. Push this repo to GitHub (or GitLab / Bitbucket). If you just initialized git: `git add -A && git commit -m "Initial commit"`, create an empty repo on GitHub, then `git remote add origin …` and `git push -u origin main`.
+2. In Vercel: **Add New → Project**, import the repo. Framework preset **Next.js**, build command `npm run build`, output default.
+3. **Environment variables** (Vercel → Project → Settings → Environment Variables):
+   - `NEXT_PUBLIC_APP_URL` — set to your production URL after the first deploy (e.g. `https://your-project.vercel.app`), then redeploy so sitemap and metadata use the right origin.
+   - `DATABASE_URL` — optional for this scaffold (ideas load from seed data). When you use Postgres in production, use a free tier such as [Neon](https://neon.tech) or [Supabase](https://supabase.com) and paste the connection string (often append `?sslmode=require` if the host requires SSL).
+4. Deploy. Vercel assigns a public `*.vercel.app` URL; you can add a custom domain later in the same dashboard.
+
+**CLI alternative:** install [Vercel CLI](https://vercel.com/docs/cli), run `vercel login`, then from the project root `vercel` (preview) or `vercel --prod` (production). You still set env vars in the Vercel dashboard or via `vercel env`.
+
+## Scripts
+
+| Script            | Description                          |
+| ----------------- | ------------------------------------ |
+| `npm run dev`     | Next.js dev server                   |
+| `npm run build`   | Production build                     |
+| `npm run start`   | Start production server              |
+| `npm run lint`    | ESLint                               |
+| `npm run db:generate` | Generate SQL migrations from schema |
+| `npm run db:push` | Push schema (dev)                    |
+| `npm run db:migrate` | Apply migrations                  |
+| `npm run db:studio` | Drizzle Studio                    |
+| `npm run db:seed` | Insert seed ideas into Postgres      |
+
+## Project layout
+
+- `app/(public)/` — marketing and public dossier routes (`/`, `/idea-of-the-day`, `/ideas`, `/ideas/[slug]`, `/pricing`, `/about`, `/login`)
+- `app/app/` — authenticated workspace shell (stub content; Phase 2–3)
+- `app/admin/` — publishing and review (stub; Phase 4)
+- `components/idea/` — dossier UI (scores, keywords, sections, evidence, export)
+- `lib/data/seed-ideas.ts` — 10 full seed dossiers
+- `lib/db/schema.ts` — relational schema aligned with the product spec
+- `lib/scoring/` — transparent scoring and badge helpers
+- `lib/export/` — markdown / JSON export helpers
+- `drizzle/` — generated migrations
+
+## Phasing (from product spec)
+
+1. **Phase 1 (this scaffold):** Schema, seed, public home, idea of the day, archive with filters/sort/pagination, idea detail, shared components, SEO sitemap.
+2. **Phase 2:** Supabase Auth, premium gating, Stripe, `/login` implementation.
+3. **Phase 3:** Save, compare, exports in-app, workflow generation, dashboard depth.
+4. **Phase 4:** Admin editor, ingestion jobs, versions, source monitoring.
+
+## License
+
+Private / unlicensed unless you add one.
