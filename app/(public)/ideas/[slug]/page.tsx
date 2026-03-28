@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { IdeaService } from "@/lib/services/idea-service";
 import { IdeaDossier } from "@/components/idea/idea-dossier";
+import { getSiteUrl } from "@/lib/site-url";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -14,9 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const idea = await IdeaService.getBySlug(slug);
   if (!idea) return { title: "Idea not found" };
-  const url = process.env.NEXT_PUBLIC_APP_URL
-    ? `${process.env.NEXT_PUBLIC_APP_URL}/ideas/${idea.slug}`
-    : undefined;
+  const url = `${getSiteUrl()}/ideas/${idea.slug}`;
   return {
     title: `${idea.title} · SignalFoundry`,
     description: idea.oneLineSummary,

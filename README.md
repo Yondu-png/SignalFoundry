@@ -60,8 +60,8 @@ The production build is standard Next.js; the **free [Vercel](https://vercel.com
 
 1. Push this repo to GitHub (or GitLab / Bitbucket). If you just initialized git: `git add -A && git commit -m "Initial commit"`, create an empty repo on GitHub, then `git remote add origin …` and `git push -u origin main`.
 2. In Vercel: **Add New → Project**, import the repo. Framework preset **Next.js**, build command `npm run build`, output default.
-3. **Environment variables** (Vercel → Project → Settings → Environment Variables):
-   - `NEXT_PUBLIC_APP_URL` — set to your production URL after the first deploy (e.g. `https://your-project.vercel.app`), then redeploy so sitemap and metadata use the right origin.
+3. **Environment variables** (Vercel → Project → Settings → Environment Variables) — mostly optional for this app:
+   - `NEXT_PUBLIC_APP_URL` — optional; if unset, the app uses Vercel’s automatic `VERCEL_URL` for sitemap and metadata. Set this when you add a **custom domain** so canonical URLs match your real site.
    - `DATABASE_URL` — optional for this scaffold (ideas load from seed data). When you use Postgres in production, use a free tier such as [Neon](https://neon.tech) or [Supabase](https://supabase.com) and paste the connection string (often append `?sslmode=require` if the host requires SSL).
 4. Deploy. Vercel assigns a public `*.vercel.app` URL; you can add a custom domain later in the same dashboard.
 
